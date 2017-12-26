@@ -15,6 +15,8 @@ import javax.crypto.spec.SecretKeySpec;
  
 /**
  * 암호화 처리 유틸리티 클래스이다.
+ * 
+ * @author O117012
  */
 public class CryptoUtils {
     private static final String ALGORITHM = "AES";

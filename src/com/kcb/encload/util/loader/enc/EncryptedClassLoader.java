@@ -19,25 +19,37 @@ import com.kcb.encload.util.Utils;
  */
 public class EncryptedClassLoader extends ClassLoader {
     /**
-     * Binary storage for each class loaded
+     * 클래스 저장소 저장소
      */
 	private final HashMap<String, byte[]> classes = new HashMap<String, byte[]>();
 
     /**
-     * Binary storage for each resource loaded
+     * 리소스 저장소
      */
 	private final HashMap<String, byte[]> others = new HashMap<String, byte[]>();
+	/**
+	 * 암호화리소스 여부
+	 */
 	private final boolean encryptResources;
-
+	
+	/**
+	 * 생성자이다.
+	 * 
+	 * @param parent 부모 클래스로더
+	 * @param stream jarInputStream
+	 * @param encryptResources 암호화 리소스 여부
+	 */
 	public EncryptedClassLoader(ClassLoader parent, JarInputStream stream, boolean encryptResources) {
 		super(parent);
 		this.loadResources(stream);
 		this.encryptResources = encryptResources;
 	}
 
+	/**
+	 * 암호화 여부에 따라 캐싱된 리소스의 스트림을 반환한다.
+	 */
 	@Override
 	public InputStream getResourceAsStream(String name) {
-	    // If all resources are encrypted, retrieve it from memory cache
 		if (encryptResources) {
 			byte[] buffer = others.get(name);
 			if (buffer != null) {
@@ -45,14 +57,13 @@ public class EncryptedClassLoader extends ClassLoader {
 			}
 		}
 
-		// If resources are not encrypted, retrieve it normally from the current JAR
 		return super.getResourceAsStream(name);
 	}
 
 	@Override
 	public URL getResource(String name) {
 		if (encryptResources) {
-			throw null;	// Cannot get URL for encrypted resource
+			throw null;
         } else {
 			return super.getResource(name);
 		}
@@ -61,7 +72,7 @@ public class EncryptedClassLoader extends ClassLoader {
 	@Override
 	protected Enumeration<URL> findResources(String name) throws IOException {
 		if (encryptResources) {
-			throw new IOException("Cant get URL from resource in memory"); // Cannot get URL for encrypted resource
+			throw new IOException("Cant get URL from resource in memory");
 		} else {
 			return super.findResources(name);
 		}
@@ -83,10 +94,11 @@ public class EncryptedClassLoader extends ClassLoader {
 		}
 	}
 
-    /**
-     *  Iterate the JarInputStream (that points to current JAR)
-     *  and load the resources and classes into memory
-     */
+	/**
+	 * 전달받은 JarInputStream에서 리소스와 class를 메모리에 캐싱한다.
+	 * 
+	 * @param stream jarInputStream
+	 */
 	public void loadResources(JarInputStream stream) {
 		byte[] buffer = new byte[1024];
 
